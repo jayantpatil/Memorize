@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  EmojiMemoryGameView.swift
 //  Memorize
 //
 //  Created by Jayant D Patil on 14/09/24.
@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-struct ContentView: View {
-    @State var selectedTheme: Theme = Theme.allCases.first!
+struct EmojiMemoryGameView: View {
+    @ObservedObject var viewModel: EmojiMemoryGame
     
     var body: some View {
         VStack {
@@ -17,38 +17,22 @@ struct ContentView: View {
             ScrollView {
                 cards
             }
-            themeChooser
+            Button("Shuffle") {
+                viewModel.shuffle()
+            }
         }
         .padding()
     }
     
-    var themeChooser: some View {
-        HStack(spacing: 50) {
-            ForEach(Theme.allCases, id: \.id) { theme in
-                Button(action: {
-                    selectedTheme = theme
-                }, label: {
-                    VStack {
-                        let systemName = theme == selectedTheme ? theme.symbol + ".fill" : theme.symbol
-                        Image(systemName: systemName)
-                            .font(.title)
-                        Text(theme.rawValue)
-                            .font(.footnote)
-                    }
-                })
-            }
-        }
-    }
-    
     var cards: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 65))]) {
-            let indicesList = [selectedTheme.emojis.indices, selectedTheme.emojis.indices].flatMap { $0 }.shuffled()
-            ForEach(Array(indicesList.enumerated()), id: \.offset) { index, number in
-                CardView(content: selectedTheme.emojis[number])
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 85), spacing: 0)], spacing: 0) {
+            ForEach(viewModel.cards.indices, id: \.self) { index in
+                CardView(viewModel.cards[index])
                     .aspectRatio(2/3, contentMode: .fit)
+                    .padding(4)
             }
         }
-        .foregroundColor(selectedTheme.color)
+        .foregroundColor(.orange)
     }
 }
 
@@ -97,8 +81,10 @@ enum Theme: String, CaseIterable, Identifiable {
 }
 
 struct CardView: View {
-    let content: String
-    @State var isFaceUp = false
+    var card: MemorizeGame<String>.Card
+    init(_ card: MemorizeGame<String>.Card) {
+        self.card = card
+    }
     
     var body: some View {
         ZStack {
@@ -106,16 +92,17 @@ struct CardView: View {
             Group {
                 base.fill(.white)
                 base.strokeBorder(lineWidth: 2)
-                Text(content).font(.largeTitle)
+                Text(card.cardContent)
+                    .font(.system(size: 200))
+                    .minimumScaleFactor(0.01)
+                    .aspectRatio(1, contentMode: .fit)
             }
-            .opacity(isFaceUp ? 1 : 0)
-            base.fill().opacity(isFaceUp ? 0 : 1)
-        }.onTapGesture {
-            isFaceUp.toggle()
+            .opacity(card.isFaceUp ? 1 : 0)
+            base.fill().opacity(card.isFaceUp ? 0 : 1)
         }
     }
 }
 
 #Preview {
-    ContentView()
+    EmojiMemoryGameView(viewModel: EmojiMemoryGame())
 }
