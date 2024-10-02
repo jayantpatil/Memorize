@@ -9,32 +9,25 @@ import SwiftUI
 
 struct EmojiMemoryGameView: View {
     @ObservedObject var viewModel: EmojiMemoryGame
-    
+    private let cardAspectRatio: CGFloat = 2/3
     var body: some View {
         VStack {
-            Text("Memorize!")
-                .font(.largeTitle)
-            ScrollView {
-                cards
-                    .animation(.default, value: viewModel.cards)
-            }
-            Button("Shuffle") {
-                viewModel.shuffle()
+            cards
+                .animation(.default, value: viewModel.cards)
+            Button("New Game") {
+                viewModel.startNewGame()
             }
         }
         .padding()
     }
-    
-    var cards: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 85), spacing: 0)], spacing: 0) {
-            ForEach(viewModel.cards) { card in
-                CardView(card)
-                    .aspectRatio(2/3, contentMode: .fit)
-                    .padding(4)
-                    .onTapGesture {
-                        viewModel.choose(card)
-                    }
-            }
+
+    private var cards: some View {
+        AspectVGrid(viewModel.cards, aspectRatio: cardAspectRatio) { card in
+            CardView(card)
+                .padding(4)
+                .onTapGesture {
+                    viewModel.choose(card)
+                }
         }
         .foregroundColor(.orange)
     }
@@ -44,8 +37,21 @@ enum Theme: String, CaseIterable, Identifiable {
     case Vehicle
     case Animal
     case Food
-    
+
     var id: Self { self }
+    var name: String {
+        switch self {
+        case .Vehicle:
+            "Vehicle"
+
+        case .Animal:
+            "Animal"
+
+        case .Food:
+            "Food"
+        }
+    }
+
     var symbol: String {
         switch self {
         case .Vehicle:
@@ -56,32 +62,44 @@ enum Theme: String, CaseIterable, Identifiable {
             "fork.knife.circle"
         }
     }
-    
+
     var color: Color {
         switch self {
         case .Vehicle:
             return .gray
-            
+
         case .Animal:
             return .red
-            
+
         case .Food:
             return .green
         }
     }
+
+    var numberOfPairs: Int {
+        switch self {
+        case .Vehicle:
+            return 8
+        case .Animal:
+            return 10
+        case .Food:
+            return 7
+        }
+    }
+
     var emojis: [String] {
         switch self {
         case .Vehicle:
             return ["🏎️", "🚓", "✈️", "🚀", "🚗", "🚌", "🛶", "🛸"]
-            
+
         case .Animal:
-            return ["🦖", "🐳", "🦍" , "🐇", "🐶", "🦁", "🐒", "🦄", "🐙"]
+            return ["🦖", "🐳", "🦍" , "🐇", "🐶", "🦁", "🐒", "🦄", "🐙", "🦋"]
 
         case .Food:
-            return  ["🍉" , "🍕", "🍫", "🍩", "🥞", "🍒", "🍍", "🍔", "🥗", "🍇"]
+            return  ["🍉" , "🍕", "🍫", "🍩", "🥞", "🍒", "🍍", "🍔", "🥗", "🍇", "🌮", "🥟"]
         }
     }
-    
+
 }
 
 struct CardView: View {

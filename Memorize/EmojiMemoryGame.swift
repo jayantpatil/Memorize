@@ -21,18 +21,25 @@ class EmojiMemoryGame: ObservableObject {
             return emojis[pairIndex]
         }
     }
-    
+
     var cards: [MemorizeGame<String>.Card] {
         model.cards
     }
-    
+
+    func getName() -> String {
+        model.getName()
+    }
+
     // MARK: - Intents
-    
+
     func choose(_ card: MemorizeGame<String>.Card) {
         model.choose(card)
     }
-    
-    func shuffle() {
-        model.shuffle()
+
+    func startNewGame() {
+        model.startNewGame()
     }
+    //    func shuffle() {
+    //        model.shuffle()
+    //    }
 }

@@ -8,20 +8,33 @@
 import Foundation
 
 struct MemorizeGame<CardContent> where CardContent: Equatable {
-   private(set) var cards: [Card]
-    
+    private(set) var cards: [Card]
+    private var theme: Theme!
+    private(set) var currentElements: [CardContent]
+
     init(numberOfPairsOfCards: Int, cardContentFactory: (Int) -> CardContent) {
         cards = []
-        for pairIndex in 0..<max(2, numberOfPairsOfCards) {
-            let cardContent = cardContentFactory(pairIndex)
-            cards.append(Card(content: cardContent, id: "\(pairIndex+1)a"))
-            cards.append(Card(content: cardContent, id: "\(pairIndex+1)b"))
-        }
+        currentElements = []
+        startNewGame()
     }
-    
+
     var indexOfOneAndOnlyFaceUpCard: Int? {
         get { cards.indices.filter { index in cards[index].isFaceUp }.only }
         set { cards.indices.forEach { cards[$0].isFaceUp = ($0 == newValue) } }
+    }
+
+    mutating func startNewGame() {
+        cards = []
+        theme = Theme.allCases.randomElement()
+        let currentElements: [CardContent] = Array(theme.emojis.shuffled().prefix(theme.numberOfPairs)) as! [CardContent]
+
+        for pairIndex in 0..<max(2, theme.numberOfPairs) {
+
+            let cardContent = currentElements[pairIndex] //cardContentFactory(pairIndex)
+            cards.append(Card(content: cardContent, id: "\(pairIndex+1)a"))
+            cards.append(Card(content: cardContent, id: "\(pairIndex+1)b"))
+        }
+        cards.shuffle()
     }
 
     mutating func choose(_ card: Card) {
@@ -43,10 +56,15 @@ struct MemorizeGame<CardContent> where CardContent: Equatable {
     mutating func shuffle() {
         cards.shuffle()
     }
-    
+
+    func getName() -> String {
+        theme.name
+    }
+
     struct Card: Equatable, Identifiable, CustomDebugStringConvertible {
         var isFaceUp: Bool = false
         var isMatched: Bool = false
+        var isSeen: Bool = false
         let content: CardContent
         var id: String
         var debugDescription: String {
