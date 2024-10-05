@@ -32,6 +32,10 @@ class EmojiMemoryGame: ObservableObject {
         .orange
     }
 
+    var score: Int {
+        model.score
+    }
+
     func getName() -> String {
         model.getName()
     }

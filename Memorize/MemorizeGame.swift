@@ -11,6 +11,7 @@ struct MemorizeGame<CardContent> where CardContent: Equatable {
     private(set) var cards: [Card]
     private var theme: Theme!
     private(set) var currentElements: [CardContent]
+    private(set) var score = 0
 
     init(numberOfPairsOfCards: Int, cardContentFactory: (Int) -> CardContent) {
         cards = []
@@ -44,6 +45,14 @@ struct MemorizeGame<CardContent> where CardContent: Equatable {
                     if cards[potentialMatchIndex].content == cards[chosenIndex].content {
                         cards[potentialMatchIndex].isMatched = true
                         cards[chosenIndex].isMatched = true
+                        score += 2
+                    } else {
+                        if cards[chosenIndex].hasBeenSeen {
+                            score -= 1
+                        }
+                        if cards[potentialMatchIndex].hasBeenSeen {
+                            score -= 1
+                        }
                     }
                 } else {
                     indexOfOneAndOnlyFaceUpCard = chosenIndex
@@ -63,8 +72,14 @@ struct MemorizeGame<CardContent> where CardContent: Equatable {
 
     struct Card: Equatable, Identifiable, CustomDebugStringConvertible {
         var isFaceUp: Bool = false
+            didSet {
+                if oldValue && !isFaceUp {
+                    hasBeenSeen = true
+                }
+            }
+        }
         var isMatched: Bool = false
-        var isSeen: Bool = false
+        var hasBeenSeen: Bool = false
         let content: CardContent
         var id: String
         var debugDescription: String {
